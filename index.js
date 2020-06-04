@@ -7,7 +7,7 @@ const { createDb } = require("./lib");
 const argv = minimist(process.argv.slice(2));
 
 async function main() {
-  const db = await createDb("sqlite");
+  const db = await createDb("postgres");
   const command = argv._.shift();
 
   switch (command) {
