@@ -42,8 +42,11 @@ async function main() {
       try {
         const { user, name, value } = argv;
         const pass = await promptPassword();
+        const isAuth = await db.authenticate(user, pass);
 
-        await db.createSecret(user, name, value);
+        if (!isAuth) throw new Error("Invalid user or password");
+
+        await db.createSecret(user, pass, name, value);
         console.log(`secret: ${name} created`);
       } catch (err) {
         throw new Error("Cannot create secret");
@@ -52,9 +55,12 @@ async function main() {
     case "secrets:list":
       try {
         const { user } = argv;
-        const pass = await promptPassword();
-        const secrets = await db.listSecrets(user);
 
+        const pass = await promptPassword();
+        const isAuth = await db.authenticate(user, pass);
+        if (!isAuth) throw new Error("Invalid user or password");
+
+        const secrets = await db.listSecrets(user);
         secrets.forEach((s) => {
           console.log(`- ${s.name}`);
         });
@@ -66,11 +72,14 @@ async function main() {
       try {
         const { user, name } = argv;
         const pass = await promptPassword();
-        const secret = await db.getSecret(user, name);
+        const isAuth = await db.authenticate(user, pass);
+        if (!isAuth) throw new Error("Invalid user or password");
 
+        const secret = await db.getSecret(user, pass, name);
         if (!secret) return console.log(`secret ${name} not found`);
         console.log(`- ${secret.name} = ${secret.value}`);
       } catch (err) {
+        console.log(err);
         throw new Error("Cannot get secret");
       }
       break;
@@ -78,6 +87,9 @@ async function main() {
       try {
         const { user, name, value } = argv;
         const pass = await promptPassword();
+        const isAuth = await db.authenticate(user, pass);
+
+        if (!isAuth) throw new Error("Invalid user or password");
 
         await db.updateSecret(user, name, value);
         console.log(`secret ${name} updated`);
@@ -89,6 +101,8 @@ async function main() {
       try {
         const { user, name } = argv;
         const pass = await promptPassword();
+        const isAuth = await db.authenticate(user, pass);
+        if (!isAuth) throw new Error("Invalid user or password");
 
         await db.deleteSecret(user, name);
         console.log(`secret ${name} deleted`);
